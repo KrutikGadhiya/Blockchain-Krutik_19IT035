@@ -38,4 +38,19 @@ contract TokenSale {
         // trigger sell event
         emit Sell(msg.sender, _numberOfTokens);
     }
+
+    // Ending Token TokenSale
+    function endSale() public {
+        // Require admin
+        require(msg.sender == admin);
+        // Transfer remaining tokens to admin
+        require(
+            tokenContract.transfer(
+                admin,
+                tokenContract.balanceOf(address(this))
+            )
+        );
+        // destroy contract
+        selfdestruct(payable(admin));
+    }
 }

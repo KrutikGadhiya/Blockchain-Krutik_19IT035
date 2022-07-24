@@ -96,4 +96,30 @@ contract("TokenSale", async (accounts) => {
       );
     }
   });
+
+  it("ends token sale", async () => {
+    contract = await TokenSale.deployed();
+    tokenContract = await Krutik_19IT035.deployed();
+
+    // try to end sale from account other than admin
+    try {
+      let res = await contract.endSale({ from: buyer });
+      await assert.fail(res);
+    } catch (error) {
+      // console.log("[Message]: ", error.message);
+      assert(error?.message.includes("revert"), "must be admin to end sale");
+    }
+
+    let receipt = await contract.endSale({ from: admin });
+    let balanceOfAdmin = await tokenContract.balanceOf(admin);
+    assert.equal(
+      balanceOfAdmin.toNumber(),
+      999990,
+      "retuens all unsold tokens to admin"
+    );
+
+    let price = await contract.tokenPrice();
+    console.log("[price]: ", price);
+    assert.equal(price.toNumber(), 0, "token price was reset");
+  });
 });
