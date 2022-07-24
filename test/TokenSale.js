@@ -1,8 +1,14 @@
 var TokenSale = artifacts.require("./TokenSale.sol");
+var Krutik_19IT035 = artifacts.require("./Krutik_19IT035.sol");
 
 contract("TokenSale", async (accounts) => {
   var contract;
+  var tokenContract;
+  var admin = accounts[0];
+  var tokensAvailable = 750000;
   var tokenPrice = 1000000000000000; // in wei
+  let buyer = accounts[1];
+
   it("initialize the contract with the correct values", async () => {
     contract = await TokenSale.deployed();
     let address = await contract.address;
@@ -13,5 +19,81 @@ contract("TokenSale", async (accounts) => {
 
     let price = await contract.tokenPrice();
     assert.equal(price, tokenPrice, "token price is correct");
+  });
+
+  it("facilitates token buying", async () => {
+    tokenContract = await Krutik_19IT035.deployed();
+    contract = await TokenSale.deployed();
+
+    // Provision 75% tokens to the token sale
+    let receipt1 = await tokenContract.transfer(
+      contract.address,
+      tokensAvailable,
+      { from: admin }
+    );
+
+    let numberOfTokens = 10;
+    let value = numberOfTokens * tokenPrice;
+    let receipt = await contract.buyTokens(numberOfTokens, {
+      from: buyer,
+      value: value,
+    });
+
+    assert.equal(receipt.logs.length, 1, "triggers one event");
+    assert.equal(receipt.logs[0].event, "Sell", "should be the Sell event");
+    assert.equal(
+      receipt.logs[0].args._buyer,
+      buyer,
+      "log the account that purchased the tokens"
+    );
+    assert.equal(
+      receipt.logs[0].args._amount,
+      numberOfTokens,
+      "log the number of tokens purchased"
+    );
+
+    let amount = await contract.tokensSold();
+    assert.equal(
+      amount.toNumber(),
+      numberOfTokens,
+      "increments the number of token sold"
+    );
+
+    let balanceOfBuyer = await tokenContract.balanceOf(buyer);
+    assert.equal(balanceOfBuyer.toNumber(), numberOfTokens);
+    let balanceOfContract = await tokenContract.balanceOf(contract.address);
+    assert.equal(
+      balanceOfContract.toNumber(),
+      tokensAvailable - numberOfTokens
+    );
+
+    try {
+      // try to buy tokens differnt from the ether value
+      let res = await contract.buyTokens(numberOfTokens, {
+        from: buyer,
+        value: 1,
+      });
+      await assert.fail(res);
+    } catch (error) {
+      // console.log("[Message]: ", error.message);
+      assert(
+        error.message.includes("revert"),
+        "msg.value must equal number of tokens in wei"
+      );
+    }
+    try {
+      // try to buy tokens differnt from the ether value
+      let res = await contract.buyTokens(800000, {
+        from: buyer,
+        value: numberOfTokens * tokenPrice,
+      });
+      await assert.fail(res);
+    } catch (error) {
+      // console.log("[Message]: ", error.message);
+      assert(
+        error?.message.includes("revert"),
+        "cannot purchase more tokens than available"
+      );
+    }
   });
 });

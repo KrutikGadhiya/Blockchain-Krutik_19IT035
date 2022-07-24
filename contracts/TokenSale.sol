@@ -8,6 +8,9 @@ contract TokenSale {
     address admin;
     Krutik_19IT035 public tokenContract;
     uint256 public tokenPrice;
+    uint256 public tokensSold;
+
+    event Sell(address _buyer, uint256 _amount);
 
     constructor(Krutik_19IT035 _tokenContract, uint256 _tokenPrice) {
         // Assign an admin
@@ -16,5 +19,23 @@ contract TokenSale {
         tokenContract = _tokenContract;
         // Token Price
         tokenPrice = _tokenPrice;
+    }
+
+    // multiply
+    function multiply(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        require(y == 0 || (z = x * y) / y == x);
+    }
+
+    function buyTokens(uint256 _numberOfTokens) public payable {
+        // require that value is equal to tokens
+        require(msg.value == multiply(_numberOfTokens, tokenPrice));
+        // require that the contract has enough tokens
+        require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
+        // require transfer is successfull
+        require(tokenContract.transfer(msg.sender, _numberOfTokens));
+        // keep track of tokensSold
+        tokensSold += _numberOfTokens;
+        // trigger sell event
+        emit Sell(msg.sender, _numberOfTokens);
     }
 }
