@@ -10,90 +10,61 @@ function readTextFile(file, callback) {
   rawFile.send(null);
 }
 
+const id = (_id) => {
+  return document.getElementById(_id);
+};
+
 const App = {
   web3Provider: null,
   web3: null,
-  accounts: [],
+  account: "0x0",
   contracts: {},
   init: () => {
     console.log("App initialized...");
     return App.initWeb3();
   },
   initWeb3: () => {
-    // if (typeof web3 !== "undefined") {
-    //   App.web3Provider = web3.currentProvider;
-    //   App.web3 = new Web3(web3.currentProvider);
-    //   console.log(App.web3);
-    //   // accounts = App.web3.eth.accounts;
-    // } else {
-    App.web3Provider = new Web3.providers.HttpProvider("http://127.0.0.1:7545");
-    App.web3 = new Web3(App.web3Provider);
-    // accounts = App.web3.eth.accounts;
-    // }
+    if (typeof window.ethereum !== "undefined") {
+      App.web3Provider = window.ethereum;
+      App.web3 = new Web3(window.ethereum);
+    } else {
+      App.web3Provider = new Web3.providers.HttpProvider(
+        "http://127.0.0.1:7545"
+      );
+      App.web3 = new Web3(App.web3Provider);
+    }
     return App.initContracts();
   },
 
   initContracts: () => {
     readTextFile("TokenSale.json", async function (text) {
-      console.log(JSON.parse(text));
-      // App.contracts.TokenSale = web3.eth.Contract(
-      //   JSON.parse(text).abi,
-      //   "0xE02e01FB4aD576B63D1F5D66a1d9D6A9B9Cf1d0E"
-      // );
-      // App.contracts.TokenSale = App.web3.eth
-      //   .contract(JSON.parse(text).abi)
-      //   .at("0xE02e01FB4aD576B63D1F5D66a1d9D6A9B9Cf1d0E");
-      // console.log(App.contracts.TokenSale);
-      // let tokenPrice = await App.contracts.TokenSale.tokenPrice({
-      //   from: App.web3.eth.accounts[0],
-      // });
-      // console.log("tokenPrice", tokenPrice);
-
+      // console.log(JSON.parse(text));
       App.contracts.TokenSale = TruffleContract(JSON.parse(text));
       App.contracts.TokenSale.setProvider(App.web3Provider);
-      App.contracts.TokenSale.deployed().then(async (data) => {
-        console.log(`TokenSale Address: ${data.address}`);
-        let tokenPrice = await data.tokenPrice();
-        console.log(`Token Price: ${tokenPrice}`);
-      });
+
+      let data = await App.contracts.TokenSale.deployed();
+      console.log(`TokenSale Address: ${data.address}`);
+      // let tokenPrice = await data.tokenPrice();
+      // console.log(`Token Price: ${tokenPrice}`);
+    });
+    readTextFile("Krutik_19IT035.json", async function (text) {
+      // console.log(JSON.parse(text));
+      App.contracts.Krutik_19IT035 = TruffleContract(JSON.parse(text));
+      App.contracts.Krutik_19IT035.setProvider(App.web3Provider);
+
+      let data = await App.contracts.Krutik_19IT035.deployed();
+      console.log(`Krutik_19IT035 Address: ${data.address}`);
+      App.render();
     });
   },
-  // initContracts: function () {
 
-  //   App.contracts.TokenSale = App.web3.eth
-  //       .contract(JSON.parse(text).abi)
-  //       .at("0x7991b7a125a1BdEB34A5DD47b46b9D8921357797");
-
-  //   //  console.log(App.contracts.TokenSale);
-  //     let tokenPrice = await App.contracts.TokenSale.methods.totalSupply.call();
-  //     console.log("tokenPrice", tokenPrice);
-
-  //   $.getJSON("TokenSale.json", function (tokenSale) {
-  //     App.contracts.TokenSale = TruffleContract(tokenSale);
-  //     App.contracts.TokenSale.setProvider(App.web3Provider);
-  //     App.contracts.TokenSale.deployed().then(function (tokenSale) {
-  //       console.log("Dapp Token Sale Address:", tokenSale.address);
-  //     });
-  //   }).done(function () {
-  //     $.getJSON("Krutik_19IT035.json", function (krutik_19IT035) {
-  //       App.contracts.Krutik_19IT035 = TruffleContract(krutik_19IT035);
-  //       App.contracts.Krutik_19IT035.setProvider(App.web3Provider);
-  //       App.contracts.Krutik_19IT035.deployed().then(function (krutik_19IT035) {
-  //         console.log("Dapp Token Address:", krutik_19IT035.address);
-  //       });
-
-  //       App.listenForEvents();
-  //       return App.render();
-  //     });
-  //   });
-  // },
+  render: () => {
+    App.account = App.web3Provider.selectedAddress;
+    console.log(`your Account: ${App.account}`);
+    id("accountAddress").innerText = App.account;
+  },
 };
 
-// window.addEventListener("load", () => {
-//   App.init();
-// });
-$(function () {
-  $(window).load(function () {
-    App.init();
-  });
+window.addEventListener("load", () => {
+  App.init();
 });
