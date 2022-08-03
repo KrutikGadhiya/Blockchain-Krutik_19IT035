@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/KrutikGadhiya/Blockchain-Krutik_19IT035#readme",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.13",
     "dotenv": "^16.0.1",
     "lite-server": "^2.6.1"
   },
