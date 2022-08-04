@@ -1,18 +1,32 @@
+// function readTextFile(file, callback) {
+//   var rawFile = new XMLHttpRequest();
+//   rawFile.overrideMimeType("application/json");
+//   rawFile.open("GET", file, true);
+//   rawFile.onreadystatechange = function () {
+//     if (rawFile.readyState === 4 && rawFile.status == "200") {
+//       callback(rawFile.responseText);
+//     }
+//   };
+//   rawFile.send(null);
+// }
+
 function readTextFile(file, callback) {
-  var rawFile = new XMLHttpRequest();
-  rawFile.overrideMimeType("application/json");
-  rawFile.open("GET", file, true);
-  rawFile.onreadystatechange = function () {
-    if (rawFile.readyState === 4 && rawFile.status == "200") {
-      callback(rawFile.responseText);
-    }
-  };
-  rawFile.send(null);
+  fetch(file)
+    .then((res) => res.json())
+    .then((data) => callback(data))
+    .catch((err) => console.log(err));
 }
 
 const id = (_id) => {
   return document.getElementById(_id);
 };
+
+async function getAccount() {
+  const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+  console.log(accounts);
+  const account = accounts[0];
+  return account;
+}
 
 const showLoading = (show) => {
   if (show) {
@@ -55,10 +69,10 @@ const App = {
 
   initContracts: () => {
     readTextFile("TokenSale.json", async function (text) {
-      App.account = App.web3Provider.selectedAddress;
+      App.account = await getAccount();
       console.log(`your Account: ${App.account}`);
       // console.log(JSON.parse(text));
-      App.contracts.TokenSale = TruffleContract(JSON.parse(text));
+      App.contracts.TokenSale = TruffleContract(text);
       App.contracts.TokenSale.setProvider(App.web3Provider);
 
       // let data = await App.contracts.TokenSale.deployed();
@@ -69,8 +83,8 @@ const App = {
       // console.log(`Token Sold: ${App.tokensSold}`);
 
       readTextFile("Krutik_19IT035.json", async function (text) {
-        // console.log(JSON.parse(text));
-        App.contracts.Krutik_19IT035 = TruffleContract(JSON.parse(text));
+        // console.log(JSON.parse(text));u
+        App.contracts.Krutik_19IT035 = TruffleContract(text);
         App.contracts.Krutik_19IT035.setProvider(App.web3Provider);
 
         // let data = await App.contracts.Krutik_19IT035.deployed();
