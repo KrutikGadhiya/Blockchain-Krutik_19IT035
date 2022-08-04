@@ -41,6 +41,7 @@ const App = {
   },
   initWeb3: () => {
     if (typeof window.ethereum !== "undefined") {
+      console.log("metamask found");
       App.web3Provider = window.ethereum;
       App.web3 = new Web3(window.ethereum);
     } else {
@@ -53,7 +54,7 @@ const App = {
   },
 
   initContracts: () => {
-    readTextFile("js/TokenSale.json", async function (text) {
+    readTextFile("TokenSale.json", async function (text) {
       App.account = App.web3Provider.selectedAddress;
       console.log(`your Account: ${App.account}`);
       // console.log(JSON.parse(text));
@@ -67,7 +68,7 @@ const App = {
       // App.tokensSold = await data.tokensSold();
       // console.log(`Token Sold: ${App.tokensSold}`);
 
-      readTextFile("js/Krutik_19IT035.json", async function (text) {
+      readTextFile("Krutik_19IT035.json", async function (text) {
         // console.log(JSON.parse(text));
         App.contracts.Krutik_19IT035 = TruffleContract(JSON.parse(text));
         App.contracts.Krutik_19IT035.setProvider(App.web3Provider);
