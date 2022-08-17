@@ -68,7 +68,7 @@ const App = {
   },
 
   initContracts: () => {
-    readTextFile("TokenSale.json", async function (text) {
+    readTextFile("js/TokenSale.json", async function (text) {
       App.account = await getAccount();
       console.log(`your Account: ${App.account}`);
       // console.log(JSON.parse(text));
@@ -82,7 +82,7 @@ const App = {
       // App.tokensSold = await data.tokensSold();
       // console.log(`Token Sold: ${App.tokensSold}`);
 
-      readTextFile("Krutik_19IT035.json", async function (text) {
+      readTextFile("js/Krutik_19IT035.json", async function (text) {
         // console.log(JSON.parse(text));u
         App.contracts.Krutik_19IT035 = TruffleContract(text);
         App.contracts.Krutik_19IT035.setProvider(App.web3Provider);
